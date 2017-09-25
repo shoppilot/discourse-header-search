@@ -3,10 +3,26 @@ import SiteHeader from 'discourse/components/site-header';
 import { wantsNewWindow } from 'discourse/lib/intercept-click';
 import DiscourseURL from 'discourse/lib/url';
 import { default as computed, on } from 'ember-addons/ember-computed-decorators';
+import { h } from 'virtual-dom';
+import { createWidget } from 'discourse/widgets/widget';
 
 export default {
   name: 'header-search',
   initialize(container){
+
+    createWidget('search-term-button', {
+      tagName: 'input',
+      buildId: () => 'search-term-button',
+      buildKey: () => `search-term-button`,
+
+      buildAttributes(attrs) {
+        return { type: 'submit', value:'' };
+      },
+
+      click(e) {
+        return this.sendWidgetAction('fullSearch');
+      }
+    });
 
     SiteHeader.reopen({
       toggleVisibility(topicToggled) {
@@ -47,6 +63,7 @@ export default {
 
     const searchMenuWidget = container.factoryFor('widget:search-menu');
     const corePanelContents = searchMenuWidget.class.prototype['panelContents'];
+
 
     withPluginApi('0.8.9', api => {
       api.reopenWidget('search-menu', {
@@ -109,10 +126,16 @@ export default {
           let showHeaderResults = this.state.showHeaderResults == null ||
                                   this.state.showHeaderResults === true;
 
+          const getPanelContents = function () {
+            var contents = corePanelContents.call(this);
+            contents[0].children.push(this.attach('search-term-button'));
+            return contents;
+          }.bind(this);
+
           if (formFactor === 'menu' || showHeaderResults) {
-            return corePanelContents.call(this);
+            return getPanelContents();
           } else {
-            let contents = corePanelContents.call(this);
+            let contents = getPanelContents();
 
             Ember.run.scheduleOnce('afterRender', this, () => {
               $('#search-term').val('');
