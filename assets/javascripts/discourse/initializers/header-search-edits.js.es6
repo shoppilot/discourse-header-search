@@ -157,10 +157,13 @@ export default {
         if (!searchMenuVisible && showHeaderSearch && !header.attrs.topic && !helper.widget.site.mobileView) {
           $('.d-header').addClass('header-search-enabled');
 
-          return helper.attach('search-menu', {
-            contextEnabled: header.state.contextEnabled,
-            formFactor: 'header'
-          });
+            return [
+              helper.attach('search-menu', {
+                contextEnabled: header.state.contextEnabled,
+                formFactor: 'header'
+              }),
+              helper.attach('lm-header-site-link')
+            ];
         } else {
           $('.d-header').removeClass('header-search-enabled');
         }
